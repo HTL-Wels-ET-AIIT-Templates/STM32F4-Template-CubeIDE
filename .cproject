@@ -94,7 +94,8 @@
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1532193706.STM32F105V8_FLASH.ld" name="STM32F105V8_FLASH.ld" rcbsApplicability="disable" resourcePath="STM32F105V8_FLASH.ld" toolsToInvoke=""/>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1532193706.MK30DN512xxx10_FLASH.ld" name="MK30DN512xxx10_FLASH.ld" rcbsApplicability="disable" resourcePath="MK30DN512xxx10_FLASH.ld" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Libraries"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Libraries"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
