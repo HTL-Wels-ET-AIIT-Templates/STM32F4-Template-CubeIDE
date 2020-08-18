@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file provides set of firmware functions to manage Leds and
   *          push-button available on STM32F429I-DISCO Kit from STMicroelectronics.
   ******************************************************************************
@@ -197,7 +197,7 @@ void STM_EVAL_PBInit(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode)
 
   /* Configure Button pin as input */
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_InitStructure.GPIO_Pin = BUTTON_PIN[Button];
   GPIO_Init(BUTTON_PORT[Button], &GPIO_InitStructure);
 
@@ -296,14 +296,12 @@ void sEE_LowLevel_Init(void)
   RCC_APB1PeriphClockCmd(sEE_I2C_CLK, ENABLE);
   
   /*!< sEE_I2C_SCL_GPIO_CLK and sEE_I2C_SDA_GPIO_CLK Periph clock enable */
-  RCC_AHB1PeriphClockCmd(sEE_I2C_SCL_GPIO_CLK, ENABLE);
-  RCC_AHB1PeriphClockCmd(sEE_I2C_SDA_GPIO_CLK, ENABLE);
+  RCC_AHB1PeriphClockCmd(sEE_I2C_SCL_GPIO_CLK | sEE_I2C_SDA_GPIO_CLK, ENABLE);
   
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
   
   /* Reset sEE_I2C IP */
-  RCC_APB1PeriphResetCmd(sEE_I2C_CLK, ENABLE);
-  
+  RCC_APB1PeriphResetCmd(sEE_I2C_CLK, ENABLE);  
   /* Release reset signal of sEE_I2C IP */
   RCC_APB1PeriphResetCmd(sEE_I2C_CLK, DISABLE);
     

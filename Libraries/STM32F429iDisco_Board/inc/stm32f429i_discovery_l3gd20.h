@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_l3gd20.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file contains definitions for stm32f429i_discovery_l3gd20.c 
   *          firmware driver.
   ******************************************************************************
@@ -286,7 +286,7 @@ typedef struct
   * @{
   */   
 #define L3GD20_INT1INTERRUPT_DISABLE       ((uint8_t)0x00)
-#define L3GD20_INT1INTERRUPT_ENABLE	   ((uint8_t)0x80)
+#define L3GD20_INT1INTERRUPT_ENABLE        ((uint8_t)0x80)
 /**
   * @}
   */
@@ -295,7 +295,7 @@ typedef struct
   * @{
   */   
 #define L3GD20_INT2INTERRUPT_DISABLE       ((uint8_t)0x00)
-#define L3GD20_INT2INTERRUPT_ENABLE	   ((uint8_t)0x08)
+#define L3GD20_INT2INTERRUPT_ENABLE        ((uint8_t)0x08)
 /**
   * @}
   */

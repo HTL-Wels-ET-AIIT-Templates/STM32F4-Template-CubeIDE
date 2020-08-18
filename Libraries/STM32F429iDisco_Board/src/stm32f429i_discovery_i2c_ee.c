@@ -2,20 +2,25 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_i2c_ee.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file provides a set of functions needed to manage an I2C M24LR64 
   *          EEPROM memory.
   *          
-  *          ===================================================================      
-  *          Notes: 
-  *           - This driver is intended for STM32F4xx families devices only.     
+  *          =================================================================== 
+  *          Notes:
+  *           - This driver is intended for STM32F4xx families devices only. 
+  *           - The I2C EEPROM memory (M24LR64) is available on separate daughter 
+  *             board ANT7-M24LR-A, which is not provided with the STM32F429I 
+  *             DISCOVERY board.
+  *             To use this driver you have to connect the ANT7-M24LR-A to CN3 
+  *             connector of STM32F429I DISCOVERY board.      
   *          ===================================================================
   *              
   *          It implements a high level communication layer for read and write 
   *          from/to this memory. The needed STM32F4xx hardware resources (I2C and 
   *          GPIO) are defined in stm32f429i_discovery.h file, and the initialization is 
-  *          performed in sEE_LowLevel_Init() function declared in stm32f429i_discovery_i2c_ee.c 
+  *          performed in sEE_LowLevel_Init() function declared in stm32f429i_discovery.c 
   *          file.
   *          You can easily tailor this driver to any other development board, 
   *          by just adapting the defines for hardware resources and 
@@ -26,7 +31,7 @@
   *                to/from EEPROM memory.
   *             
   *     +-----------------------------------------------------------------+
-  *     |               Pin assignment for M24LR64 EEPROM                 |                 
+  *     |               Pin assignment for M24LR64 EEPROM                 |
   *     +---------------------------------------+-----------+-------------+
   *     |  STM32F4xx I2C Pins                   |   sEE     |   Pin       |
   *     +---------------------------------------+-----------+-------------+
@@ -38,8 +43,8 @@
   *     | sEE_I2C_SCL_PIN/ SCL                  |   SCL     |    6        |
   *     | .                                     |   E1(GND) |    7  (0V)  |
   *     | .                                     |   VDD     |    8 (3.3V) |
-  *     +---------------------------------------+-----------+-------------+      
-  *      
+  *     +---------------------------------------+-----------+-------------+
+  *
   ******************************************************************************
   * @attention
   *
@@ -59,7 +64,7 @@
   *
   ******************************************************************************
   */
-    
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f429i_discovery_i2c_ee.h"
 
@@ -149,22 +154,26 @@ void sEE_Init(void)
   I2C_InitTypeDef  I2C_InitStructure;
   
   sEE_LowLevel_Init();
-  
-  /*!< I2C configuration */
-  /* sEE_I2C configuration */
-  I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-  I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
-  I2C_InitStructure.I2C_OwnAddress1 = I2C_SLAVE_ADDRESS7;
-  I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
-  I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-  I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;
+
+  /* If the I2C peripheral is already enabled, don't reconfigure it */
+  if ((sEE_I2C->CR1 & I2C_CR1_PE) == 0)
+  {     
+    /*!< I2C configuration */
+    /* sEE_I2C configuration */
+    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
+    I2C_InitStructure.I2C_OwnAddress1 = 0x00;
+    I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+    I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+    I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;
     
-  /* Apply sEE_I2C configuration after enabling it */
-  I2C_Init(sEE_I2C, &I2C_InitStructure);
+    /* Apply sEE_I2C configuration after enabling it */
+    I2C_Init(sEE_I2C, &I2C_InitStructure);
   
-  /* sEE_I2C Peripheral Enable */
-  I2C_Cmd(sEE_I2C, ENABLE);
-  
+    /* sEE_I2C Peripheral Enable */
+    I2C_Cmd(sEE_I2C, ENABLE);
+  }  
+
   /* Enable the sEE_I2C peripheral DMA requests */
   I2C_DMACmd(sEE_I2C, ENABLE);  
 

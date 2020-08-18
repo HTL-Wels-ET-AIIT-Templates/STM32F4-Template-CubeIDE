@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_sdram.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file contains all the functions prototypes for the 
   *          stm324x9i_disco_sdram.c driver.
   ******************************************************************************

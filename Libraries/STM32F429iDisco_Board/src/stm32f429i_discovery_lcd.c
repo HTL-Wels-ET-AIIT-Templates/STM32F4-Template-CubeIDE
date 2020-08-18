@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_lcd.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file includes the LCD driver for ILI9341 Liquid Crystal 
   *          Display Modules of STM32F429I-DISCO kit (MB1075).
   ******************************************************************************
@@ -28,10 +28,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f429i_discovery_lcd.h"
-//#include "fonts.c"
-/* In stdio.h file is everything related to output stream */
-#include "stdio.h"
-
+#include <stdio.h>
 
 /** @addtogroup Utilities
   * @{
@@ -177,11 +174,11 @@ void LCD_DeInit(void)
   GPIO_Init(GPIOB, &GPIO_InitStructure);
   
   /* GPIOC configuration */
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource0, GPIO_AF_MCO);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource1, GPIO_AF_MCO);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource8, GPIO_AF_MCO);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_MCO);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_MCO);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_MCO);
   
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6  | GPIO_Pin_7  | GPIO_Pin_12;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6  | GPIO_Pin_7  | GPIO_Pin_10;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -233,18 +230,6 @@ void LCD_DeInit(void)
 void LCD_Init(void)
 { 
   LTDC_InitTypeDef       LTDC_InitStruct;
-  GPIO_InitTypeDef       GPIO_InitStructure;
-  
-  /* Enable clock for NCS port */
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-  
-  /* Configure NCS in Output Push-Pull mode */
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOD, &GPIO_InitStructure);
   
   /* Configure the LCD Control pins ------------------------------------------*/
   LCD_CtrlLinesConfig();
@@ -405,7 +390,7 @@ void LCD_LayerInit(void)
 }
 
 /**
-  * @brief  Enable or Disable the LCD through CS pin
+  * @brief  Controls LCD Chip Select (CS) pin
   * @param  NewState CS pin state
   * @retval None
   */
@@ -426,7 +411,7 @@ void LCD_ChipSelect(FunctionalState NewState)
   * @param  Layerx: specifies the Layer foreground or background.
   * @retval None
   */
-void LCD_SetLayer(__IO uint32_t Layerx)
+void LCD_SetLayer(uint32_t Layerx)
 {
   if (Layerx == LCD_BACKGROUND_LAYER)
   {
@@ -446,7 +431,7 @@ void LCD_SetLayer(__IO uint32_t Layerx)
   * @param  BackColor: specifies the Background Color.
   * @retval None
   */
-void LCD_SetColors(__IO uint16_t TextColor, __IO uint16_t BackColor)
+void LCD_SetColors(uint16_t TextColor, uint16_t BackColor)
 {
   CurrentTextColor = TextColor; 
   CurrentBackColor = BackColor;
@@ -460,7 +445,7 @@ void LCD_SetColors(__IO uint16_t TextColor, __IO uint16_t BackColor)
             Color.
   * @retval None
   */
-void LCD_GetColors(__IO uint16_t *TextColor, __IO uint16_t *BackColor)
+void LCD_GetColors(uint16_t *TextColor, uint16_t *BackColor)
 {
   *TextColor = CurrentTextColor;
   *BackColor = CurrentBackColor;
@@ -471,7 +456,7 @@ void LCD_GetColors(__IO uint16_t *TextColor, __IO uint16_t *BackColor)
   * @param  Color: specifies the Text color code RGB(5-6-5).
   * @retval None
   */
-void LCD_SetTextColor(__IO uint16_t Color)
+void LCD_SetTextColor(uint16_t Color)
 {
   CurrentTextColor = Color;
 }
@@ -481,7 +466,7 @@ void LCD_SetTextColor(__IO uint16_t Color)
   * @param  Color: specifies the Background color code RGB(5-6-5).
   * @retval None
   */
-void LCD_SetBackColor(__IO uint16_t Color)
+void LCD_SetBackColor(uint16_t Color)
 {
   CurrentBackColor = Color;
 }
@@ -1533,8 +1518,11 @@ void LCD_WriteCommand(uint8_t LCD_Reg)
   SPI_I2S_SendData(LCD_SPI, LCD_Reg);
   
   /* Wait until a data is sent(not busy), before config /CS HIGH */
+  
+  while(SPI_I2S_GetFlagStatus(LCD_SPI, SPI_I2S_FLAG_TXE) == RESET) ;
+  
   while(SPI_I2S_GetFlagStatus(LCD_SPI, SPI_I2S_FLAG_BSY) != RESET);
-  delay(10);
+  
   LCD_ChipSelect(ENABLE);
 }
 
@@ -1554,11 +1542,19 @@ void LCD_WriteData(uint8_t value)
   SPI_I2S_SendData(LCD_SPI, value);
   
   /* Wait until a data is sent(not busy), before config /CS HIGH */
+  
+  while(SPI_I2S_GetFlagStatus(LCD_SPI, SPI_I2S_FLAG_TXE) == RESET) ;
+  
   while(SPI_I2S_GetFlagStatus(LCD_SPI, SPI_I2S_FLAG_BSY) != RESET);
-  delay(10);
+  
   LCD_ChipSelect(ENABLE);
 }
 
+/**
+  * @brief  Configure the LCD controller (Power On sequence as described in ILI9341 Datasheet)
+  * @param  None
+  * @retval None
+  */
 void LCD_PowerOn(void)
 {
   LCD_WriteCommand(0xCA);
@@ -1689,7 +1685,6 @@ void LCD_DisplayOn(void)
   LCD_WriteCommand(LCD_DISPLAY_ON);
 }
 
-
 /**
   * @brief  Disables the Display.
   * @param  None
@@ -1700,7 +1695,6 @@ void LCD_DisplayOff(void)
     /* Display Off */
     LCD_WriteCommand(LCD_DISPLAY_OFF);
 }
-
 
 /**
   * @brief  Configures LCD control lines in Output Push-Pull mode.
@@ -1713,7 +1707,8 @@ void LCD_CtrlLinesConfig(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
 
-  RCC_AHB1PeriphClockCmd(LCD_NCS_GPIO_CLK, ENABLE);
+  /* Enable GPIOs clock*/
+  RCC_AHB1PeriphClockCmd(LCD_NCS_GPIO_CLK | LCD_WRX_GPIO_CLK, ENABLE);
 
   /* Configure NCS in Output Push-Pull mode */
   GPIO_InitStructure.GPIO_Pin = LCD_NCS_PIN;
@@ -1722,7 +1717,12 @@ void LCD_CtrlLinesConfig(void)
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(LCD_NCS_GPIO_PORT, &GPIO_InitStructure);
+  
+  /* Configure WRX in Output Push-Pull mode */
+  GPIO_InitStructure.GPIO_Pin = LCD_WRX_PIN;
+  GPIO_Init(LCD_WRX_GPIO_PORT, &GPIO_InitStructure);
 
+  /* Set chip select pin high */
   LCD_CtrlLinesWrite(LCD_NCS_GPIO_PORT, LCD_NCS_PIN, Bit_SET);
 }
 
@@ -1764,10 +1764,10 @@ void LCD_SPIConfig(void)
   
   /* Configure LCD_SPI SCK pin */
   GPIO_InitStructure.GPIO_Pin = LCD_SPI_SCK_PIN;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_Init(LCD_SPI_SCK_GPIO_PORT, &GPIO_InitStructure);
 
   /* Configure LCD_SPI MISO pin */
@@ -1788,33 +1788,43 @@ void LCD_SPIConfig(void)
   GPIO_PinAFConfig(LCD_SPI_MOSI_GPIO_PORT, LCD_SPI_MOSI_SOURCE, LCD_SPI_MOSI_AF);
   
   SPI_I2S_DeInit(LCD_SPI);
-  
-  /* SPI Config */
-  SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex; //SPI_Direction_1Line_Tx;
-  SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-  SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-  SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-  SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-  SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4; 
-  SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-  SPI_InitStructure.SPI_CRCPolynomial = 7;
-  SPI_Init(LCD_SPI, &SPI_InitStructure);
 
-  /* SPI enable */
-  SPI_Cmd(LCD_SPI, ENABLE);
+  /* SPI configuration -------------------------------------------------------*/
+  /* If the SPI peripheral is already enabled, don't reconfigure it */
+  if ((LCD_SPI->CR1 & SPI_CR1_SPE) == 0)
+  {    
+    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+    SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+    SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
+    SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+    SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+    /* SPI baudrate is set to 5.6 MHz (PCLK2/SPI_BaudRatePrescaler = 90/16 = 5.625 MHz) 
+       to verify these constraints:
+          - ILI9341 LCD SPI interface max baudrate is 10MHz for write and 6.66MHz for read
+          - l3gd20 SPI interface max baudrate is 10MHz for write/read
+          - PCLK2 frequency is set to 90 MHz 
+       */
+    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
+    SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+    SPI_InitStructure.SPI_CRCPolynomial = 7;
+    SPI_Init(LCD_SPI, &SPI_InitStructure);
+
+    /* Enable L3GD20_SPI  */
+    SPI_Cmd(LCD_SPI, ENABLE);
+  }
 }
 
 /**
-  * @brief GPIO config for LTDC.
-  * @retval
-  *  None
+  * @brief  GPIO config for LTDC.
+  * @param  None
+  * @retval None
   */
 static void LCD_AF_GPIOConfig(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct;
   
-  /* Enable GPIOI, GPIOJ, GPIOG, GPIOF, GPIOH AHB Clocks */
+  /* Enable GPIOA, GPIOB, GPIOC, GPIOD, GPIOF, GPIOG AHB Clocks */
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | \
                          RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | \
                          RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_GPIOG, ENABLE);
@@ -1824,7 +1834,7 @@ static void LCD_AF_GPIOConfig(void)
  +------------------------+-----------------------+----------------------------+
  +                       LCD pins assignment                                   +
  +------------------------+-----------------------+----------------------------+
- |  LCD_TFT R2 <-> PC.12  |  LCD_TFT G2 <-> PA.06 |  LCD_TFT B2 <-> PD.06      |
+ |  LCD_TFT R2 <-> PC.10  |  LCD_TFT G2 <-> PA.06 |  LCD_TFT B2 <-> PD.06      |
  |  LCD_TFT R3 <-> PB.00  |  LCD_TFT G3 <-> PG.10 |  LCD_TFT B3 <-> PG.11      |
  |  LCD_TFT R4 <-> PA.11  |  LCD_TFT G4 <-> PB.10 |  LCD_TFT B4 <-> PG.12      |
  |  LCD_TFT R5 <-> PA.12  |  LCD_TFT G5 <-> PB.11 |  LCD_TFT B5 <-> PA.03      |
@@ -1940,7 +1950,6 @@ static void delay(__IO uint32_t nCount)
 
 static unsigned int  Line=0;
 static unsigned int  Column=0;
-#include <stdio.h>
 
 #define COLUMN(x) ((x) * (((sFONT *)LCD_GetFont())->Width))
 

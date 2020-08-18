@@ -2,10 +2,10 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_l3gd20.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file provides a set of functions needed to manage the l3gd20
-  *          MEMS accelerometer available on STM32F429I-DISCO Kit.
+  *          MEMS three-axis digital output gyroscope available on STM32F429I-DISCO Kit.
   ******************************************************************************
   * @attention
   *
@@ -128,7 +128,7 @@ void L3GD20_RebootCmd(void)
   /* Read CTRL_REG5 register */
   L3GD20_Read(&tmpreg, L3GD20_CTRL_REG5_ADDR, 1);
   
-  /* Enable or Disable the reboot memory */
+  /* Enable the reboot memory */
   tmpreg |= L3GD20_BOOT_REBOOTMEMORY;
   
   /* Write value to MEMS CTRL_REG5 regsister */
@@ -261,7 +261,7 @@ void L3GD20_FilterCmd(uint8_t HighPassFilterState)
 /**
   * @brief  Get status for L3GD20 data
   * @param  None         
-  * @retval Data status in a L3GD20 Data
+  * @retval L3GD20 status
   */
 uint8_t L3GD20_GetDataStatus(void)
 {
@@ -274,8 +274,8 @@ uint8_t L3GD20_GetDataStatus(void)
 }
 
 /**
-  * @brief  Writes one byte to the L3GD20.
-  * @param  pBuffer : pointer to the buffer  containing the data to be written to the L3GD20.
+  * @brief  Writes a block of data to the L3GD20.
+  * @param  pBuffer : pointer to the buffer containing the data to be written to the L3GD20.
   * @param  WriteAddr : L3GD20's internal address to write to.
   * @param  NumByteToWrite: Number of bytes to write.
   * @retval None
@@ -295,6 +295,7 @@ void L3GD20_Write(uint8_t* pBuffer, uint8_t WriteAddr, uint16_t NumByteToWrite)
   
   /* Send the Address of the indexed register */
   L3GD20_SendByte(WriteAddr);
+
   /* Send the data that will be written into the device (MSB First) */
   while(NumByteToWrite >= 0x01)
   {
@@ -342,6 +343,7 @@ void L3GD20_Read(uint8_t* pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead)
   /* Set chip select High at the end of the transmission */ 
   L3GD20_CS_HIGH();
 }  
+
 /**
   * @brief  Initializes the low level interface used to drive the L3GD20
   * @param  None
@@ -358,7 +360,7 @@ static void L3GD20_LowLevel_Init(void)
   /* Enable SCK, MOSI and MISO GPIO clocks */
   RCC_AHB1PeriphClockCmd(L3GD20_SPI_SCK_GPIO_CLK | L3GD20_SPI_MISO_GPIO_CLK | L3GD20_SPI_MOSI_GPIO_CLK, ENABLE);
 
-  /* Enable CS  GPIO clock */
+  /* Enable CS GPIO clock */
   RCC_AHB1PeriphClockCmd(L3GD20_SPI_CS_GPIO_CLK, ENABLE);
   
   /* Enable INT1 GPIO clock */
@@ -373,8 +375,8 @@ static void L3GD20_LowLevel_Init(void)
 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;//GPIO_PuPd_DOWN;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
 
   /* SPI SCK pin configuration */
   GPIO_InitStructure.GPIO_Pin = L3GD20_SPI_SCK_PIN;
@@ -391,24 +393,31 @@ static void L3GD20_LowLevel_Init(void)
   /* SPI configuration -------------------------------------------------------*/
   SPI_I2S_DeInit(L3GD20_SPI);
   SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+  SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
   SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
   SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
   SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
   SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+  /* SPI baudrate is set to 5.6 MHz (PCLK2/SPI_BaudRatePrescaler = 90/16 = 5.625 MHz) 
+     to verify these constraints:
+        - ILI9341 LCD SPI interface max baudrate is 10MHz for write and 6.66MHz for read
+        - l3gd20 SPI interface max baudrate is 10MHz for write/read
+        - PCLK2 frequency is set to 90 MHz 
+    */
+  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
   SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
   SPI_InitStructure.SPI_CRCPolynomial = 7;
-  SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
   SPI_Init(L3GD20_SPI, &SPI_InitStructure);
 
-  /* Enable SPI1  */
+  /* Enable L3GD20_SPI  */
   SPI_Cmd(L3GD20_SPI, ENABLE);
-
+  
   /* Configure GPIO PIN for Lis Chip select */
   GPIO_InitStructure.GPIO_Pin = L3GD20_SPI_CS_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
+  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
   GPIO_Init(L3GD20_SPI_CS_GPIO_PORT, &GPIO_InitStructure);
 
   /* Deselect : Chip Select high */
@@ -417,8 +426,6 @@ static void L3GD20_LowLevel_Init(void)
   /* Configure GPIO PINs to detect Interrupts */
   GPIO_InitStructure.GPIO_Pin = L3GD20_SPI_INT1_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
   GPIO_Init(L3GD20_SPI_INT1_GPIO_PORT, &GPIO_InitStructure);
   

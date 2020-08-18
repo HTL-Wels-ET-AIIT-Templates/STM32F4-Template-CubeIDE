@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_lcd.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file contains all the functions prototypes for the 
   *          stm32f429i_discovery_lcd.c driver.
   ******************************************************************************
@@ -262,11 +262,11 @@ void     LCD_DeInit(void);
 void     LCD_Init(void);
 void     LCD_LayerInit(void);
 void     LCD_ChipSelect(FunctionalState NewState);
-void     LCD_SetLayer(__IO uint32_t Layerx);
-void     LCD_SetColors(__IO uint16_t _TextColor, __IO uint16_t _BackColor); 
-void     LCD_GetColors(__IO uint16_t *_TextColor, __IO uint16_t *_BackColor);
-void     LCD_SetTextColor(__IO uint16_t Color);
-void     LCD_SetBackColor(__IO uint16_t Color);
+void     LCD_SetLayer(uint32_t Layerx);
+void     LCD_SetColors(uint16_t _TextColor, uint16_t _BackColor); 
+void     LCD_GetColors(uint16_t *_TextColor, uint16_t *_BackColor);
+void     LCD_SetTextColor(uint16_t Color);
+void     LCD_SetBackColor(uint16_t Color);
 void     LCD_SetTransparency(uint8_t transparency);
 void     LCD_ClearLine(uint16_t Line);
 void     LCD_Clear(uint16_t Color);

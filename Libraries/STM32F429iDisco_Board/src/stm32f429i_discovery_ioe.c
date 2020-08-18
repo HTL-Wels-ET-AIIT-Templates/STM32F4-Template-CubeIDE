@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_ioe.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file provides a set of functions needed to manage the STMPE811
   *          IO Expander device mounted on STM32F429I-DISCO Kit.
   ******************************************************************************
@@ -35,12 +35,6 @@
   
     SUPPORTED FEATURES:
       - Touch Panel Features: Single point mode (Polling/Interrupt)
-
-
-    UNSUPPORTED FEATURES:
-      - IO Read/write : Set/Reset and Read (Polling/Interrupt)
-      - TempSensor Feature: accuracy not determined (Polling).
-      - Row ADC Feature is not supported (not implemented on STM32F429I_DISCO board)
   ----------------------------------------------------------------------------*/
 
 /* Includes ------------------------------------------------------------------*/
@@ -158,6 +152,7 @@ uint8_t IOE_Config(void)
 
 /**
   * @brief  Enables the touch Panel interrupt.
+  * @param  None
   * @retval IOE_OK: if all initializations are OK. Other value if error.
   */
 uint8_t IOE_TPITConfig(void)
@@ -248,8 +243,7 @@ FlagStatus IOE_GetGITStatus(uint8_t Global_IT)
   * @brief  Clears the selected Global interrupt pending bit(s)
   * @param  Global_IT: the Global interrupt to be cleared, could be any combination
   *         of the following values:   
-  *   @arg  Global_IT_ADC : ADC interrupt
-  *   @arg  Global_IT_TEMP : Temperature Sensor interrupts      
+  *   @arg  Global_IT_ADC : ADC interrupt    
   *   @arg  Global_IT_FE : Touch Panel Controller FIFO Error interrupt
   *   @arg  Global_IT_FF : Touch Panel Controller FIFO Full interrupt      
   *   @arg  Global_IT_FOV : Touch Panel Controller FIFO Overrun interrupt     
@@ -270,6 +264,7 @@ uint8_t IOE_ClearGITPending(uint8_t Global_IT)
 /**
   * @brief  Checks if the IOE device is correctly configured and 
   *         communicates correctly ont the I2C bus.
+  * @param  None
   * @retval IOE_OK if IOE is operational. Other value if failure.
   */
 uint8_t IOE_IsOperational(void)
@@ -295,6 +290,7 @@ uint8_t IOE_IsOperational(void)
 
 /**
   * @brief  Resets the IO Expander by Software (SYS_CTRL1, RESET bit).
+  * @param  None
   * @retval IOE_OK: if all initializations are OK. Other value if error.
   */
 uint8_t IOE_Reset(void)
@@ -314,6 +310,7 @@ uint8_t IOE_Reset(void)
 
 /**
   * @brief  Reads the IOE device ID.
+  * @param  None
   * @retval The Device ID (two bytes).
   */
 uint16_t IOE_ReadID(void)
@@ -950,20 +947,24 @@ static void IOE_GPIO_Config(void)
 static void IOE_I2C_Config(void)
 {
   I2C_InitTypeDef I2C_InitStructure;
+
+  /* If the I2C peripheral is already enabled, don't reconfigure it */
+  if ((IOE_I2C->CR1 & I2C_CR1_PE) == 0)
+  {   
+    /* IOE_I2C configuration */
+    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
+    I2C_InitStructure.I2C_OwnAddress1 = 0x00;
+    I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+    I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+    I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;
   
-  /* IOE_I2C configuration */
-  I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-  I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
-  I2C_InitStructure.I2C_OwnAddress1 = 0x00;
-  I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
-  I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-  I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;
+    /* Initialize the I2C peripheral */
+    I2C_Init(IOE_I2C, &I2C_InitStructure);
   
-  /* Initialize the I2C peripheral */
-  I2C_Init(IOE_I2C, &I2C_InitStructure);
-  
-  /* Enable the I2C peripheral */
-  I2C_Cmd(IOE_I2C, ENABLE);
+    /* Enable the I2C peripheral */
+    I2C_Cmd(IOE_I2C, ENABLE);
+  }   
 }
 
 /**
@@ -971,7 +972,6 @@ static void IOE_I2C_Config(void)
   * @param  None
   * @retval None
   */
-
 static void IOE_DMA_Config(IOE_DMADirection_TypeDef Direction, uint8_t* buffer)
 {
   DMA_InitTypeDef DMA_InitStructure;
@@ -1132,7 +1132,6 @@ uint8_t I2C_WriteDeviceRegister(uint8_t RegisterAddr, uint8_t RegisterValue)
   
 }
 
-
 /**
   * @brief  Reads a register of the device through I2C without DMA.
   * @param  RegisterAddr: The target register address (between 00x and 0x24)
@@ -1230,8 +1229,6 @@ uint8_t I2C_ReadDeviceRegister(uint8_t RegisterAddr)
 
 /**
   * @brief  Reads a buffer of 2 bytes from the device registers.
-  * @param  DeviceAddr: The address of the device, could be : IOE_1_ADDR
-  *         or IOE_2_ADDR. 
   * @param  RegisterAddr: The target register adress (between 00x and 0x24)
   * @retval The data in the buffer containing the two returned bytes (in halfword).   
   */
@@ -1343,7 +1340,7 @@ uint8_t IOE_TimeoutUserCallback(void)
   I2C_DeInit(IOE_I2C);
   I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
   I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
-  I2C_InitStructure.I2C_OwnAddress1 = 0x33;
+  I2C_InitStructure.I2C_OwnAddress1 = 0x00;
   I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
   I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
   I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;

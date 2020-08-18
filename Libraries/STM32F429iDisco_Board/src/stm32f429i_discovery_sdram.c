@@ -2,10 +2,10 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_sdram.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file provides a set of functions needed to drive the
-  *          IS42S16400J-7TL SDRAM memory mounted on STM32F429I-DISCO Kit.    
+  *          IS42S16400J SDRAM memory mounted on STM32F429I-DISCO Kit.    
   ******************************************************************************
   * @attention
   *
@@ -43,7 +43,7 @@
   
 /** @addtogroup STM32429I_DISCO_SDRAM
   * @brief     This file provides a set of functions needed to drive the 
-  *            MT48LC2M3B2B5-7E SDRAM memory mounted on STM32429I-DISCO board.
+  *            IS42S16400J SDRAM memory mounted on STM32429I-DISCO board.
   * @{
   */ 
 
@@ -75,21 +75,21 @@ void SDRAM_Init(void)
  
 /* FMC Configuration ---------------------------------------------------------*/
 /* FMC SDRAM Bank configuration */   
-  /* Timing configuration for 84 Mhz of SD clock frequency (168Mhz/2) */
+  /* Timing configuration for 90 Mhz of SD clock frequency (180Mhz/2) */
   /* TMRD: 2 Clock cycles */
-  FMC_SDRAMTimingInitStructure.FMC_LoadToActiveDelay = 2;      
-  /* TXSR: min=70ns (6x11.90ns) */
+  FMC_SDRAMTimingInitStructure.FMC_LoadToActiveDelay    = 2;      
+  /* TXSR: min=70ns (7x11.11ns) */
   FMC_SDRAMTimingInitStructure.FMC_ExitSelfRefreshDelay = 7;
-  /* TRAS: min=42ns (4x11.90ns) max=120k (ns) */
-  FMC_SDRAMTimingInitStructure.FMC_SelfRefreshTime = 4;
-  /* TRC:  min=63 (6x11.90ns) */        
-  FMC_SDRAMTimingInitStructure.FMC_RowCycleDelay = 7;         
-  /* TWR:  2 Clock cycles */
-  FMC_SDRAMTimingInitStructure.FMC_WriteRecoveryTime = 2;      
-  /* TRP:  15ns => 2x11.90ns */
-  FMC_SDRAMTimingInitStructure.FMC_RPDelay = 2;                
-  /* TRCD: 15ns => 2x11.90ns */
-  FMC_SDRAMTimingInitStructure.FMC_RCDDelay = 2;
+  /* TRAS: min=42ns (4x11.11ns) max=120k (ns) */
+  FMC_SDRAMTimingInitStructure.FMC_SelfRefreshTime      = 4;
+  /* TRC:  min=70 (7x11.11ns) */        
+  FMC_SDRAMTimingInitStructure.FMC_RowCycleDelay        = 7;         
+  /* TWR:  min=1+ 7ns (1+1x11.11ns) */
+  FMC_SDRAMTimingInitStructure.FMC_WriteRecoveryTime    = 2;      
+  /* TRP:  20ns => 2x11.11ns */
+  FMC_SDRAMTimingInitStructure.FMC_RPDelay              = 2;                
+  /* TRCD: 20ns => 2x11.11ns */
+  FMC_SDRAMTimingInitStructure.FMC_RCDDelay             = 2;
 
 /* FMC SDRAM control configuration */
   FMC_SDRAMInitStructure.FMC_Bank = FMC_Bank2_SDRAM;
@@ -325,9 +325,9 @@ void SDRAM_InitSequence(void)
 /* Step 8 --------------------------------------------------------------------*/
 
   /* Set the refresh rate counter */
-  /* (7.81 us x Freq) - 20 */
+  /* (15.62 us x Freq) - 20 */
   /* Set the device refresh counter */
-  FMC_SetRefreshCount(683);
+  FMC_SetRefreshCount(1386);
   /* Wait until the SDRAM controller is ready */ 
   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {

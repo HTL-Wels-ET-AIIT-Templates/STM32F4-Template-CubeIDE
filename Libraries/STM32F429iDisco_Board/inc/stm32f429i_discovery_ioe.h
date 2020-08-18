@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_ioe.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file contains all the functions prototypes for the
   *          stm32f429i_discovery_ioe.c driver.
   ******************************************************************************
@@ -25,17 +25,6 @@
   *
   ******************************************************************************
   */ 
-
-  /* File Info : ---------------------------------------------------------------
-    SUPPORTED FEATURES:
-      - IO Read/write : Set/Reset and Read (Polling/Interrupt)
-      - Touch Panel Features: Single point mode (Polling/Interrupt)
-      - TempSensor Feature: accuracy not determined (Polling).
-
-    UNSUPPORTED FEATURES:
-      - Row ADC Feature is not supported (not implemented on STM32F429I_DISCO Kit)
-  ----------------------------------------------------------------------------*/
-
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32F429I_DISCOVERY_IOE_H
@@ -169,14 +158,6 @@ typedef enum
 #define IOE_I2C_SDA_AF             GPIO_AF_I2C3
 #define IOE_I2C_DR                 ((uint32_t)0x40005C10)
 
-/* I2C clock speed configuration (in Hz) 
-  WARNING: 
-   Make sure that this define is not already declared in other files (ie. 
-  stm32f429i_discovery.h file). It can be used in parallel by other modules. */
-#ifndef I2C_SPEED
- #define I2C_SPEED                 100000
-#endif /* I2C_SPEED */
-
 /** 
   * @brief  IOE DMA definitions  
   */
@@ -245,7 +226,6 @@ typedef enum
   */ 
 #define IOE_GIT_GPIO               0x80
 #define IOE_GIT_ADC                0x40
-#define IOE_GIT_TEMP               0x20
 #define IOE_GIT_FE                 0x10
 #define IOE_GIT_FF                 0x08
 #define IOE_GIT_FOV                0x04

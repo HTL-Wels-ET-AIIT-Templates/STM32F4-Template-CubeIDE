@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery_i2c_ee.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file contains all the functions prototypes for 
   *          the stm32f429i_discovery_i2c_ee.c firmware driver.
   ******************************************************************************
@@ -75,16 +75,6 @@
 /* EEPROM hardware address and page size */ 
 #define sEE_HW_ADDRESS         0xA0
 #define sEE_PAGESIZE           4
-
-/* I2C clock speed configuration (in Hz) 
-  WARNING: 
-   Make sure that this define is not already declared in other files (ie. 
-  stm324xg_eval.h file). It can be used in parallel by other modules. */
-#ifndef I2C_SPEED
- #define I2C_SPEED                        100000
-#endif /* I2C_SPEED */
-
-#define I2C_SLAVE_ADDRESS7      0xA0
                                 
 /* Maximum Timeout values for flags and events waiting loops. These timeouts are
    not based on accurate values, they just guarantee that the application will 

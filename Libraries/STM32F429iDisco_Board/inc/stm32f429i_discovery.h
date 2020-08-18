@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f429i_discovery.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    20-September-2013
+  * @version V1.0.1
+  * @date    28-October-2013
   * @brief   This file contains definitions for STM32F429I-DISCO Kit Leds, push-
   *          buttons hardware resources.
   ******************************************************************************
@@ -172,10 +172,11 @@ typedef enum
 #define sEE_DIRECTION_TX                 0
 #define sEE_DIRECTION_RX                 1  
 
-/* Time constant for the delay caclulation allowing to have a millisecond 
-   incrementing counter. This value should be equal to (System Clock / 1000).
-   ie. if system clock = 168MHz then sEE_TIME_CONST should be 168. */
-#define sEE_TIME_CONST                   168 
+/* I2C clock speed configuration (in Hz), used by I2C EEPROM memory and IO Expander drivers */
+#ifndef I2C_SPEED
+ #define I2C_SPEED                        100000
+#endif /* I2C_SPEED */
+
 /**
   * @}
   */  
