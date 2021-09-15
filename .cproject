@@ -106,9 +106,7 @@
 		<project id="STM32100B-EVAL.com.atollic.truestudio.exe.1549124020" name="Executable"/>
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Debug">
-			<resource resourceType="PROJECT" workspacePath="/STM32F429I_Discovery_EXTI_Example"/>
-		</configuration>
+		<configuration configurationName="Debug"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
