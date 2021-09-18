@@ -28,6 +28,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f429i_discovery_lcd.h"
+#include "stm32f429i_discovery_ioe.h"
 #include <stdio.h>
 
 /** @addtogroup Utilities
@@ -306,6 +307,21 @@ void LCD_Init(void)
   
   LTDC_Init(&LTDC_InitStruct);
   setvbuf(stdout, NULL, _IONBF, 0);
+
+  LCD_LayerInit(); 	// LCD Layer initiatization
+  LTDC_Cmd(ENABLE);  	// Enable the LTDC
+  LCD_SetLayer(LCD_FOREGROUND_LAYER);	// Set LCD foreground layer
+
+  if (IOE_Config() != IOE_OK) {
+    LCD_Clear(LCD_COLOR_RED);
+    LCD_SetTextColor(LCD_COLOR_BLACK);
+    LCD_DisplayStringLine(LCD_LINE_6,(uint8_t*)"   IOE NOT OK      ");
+    LCD_DisplayStringLine(LCD_LINE_7,(uint8_t*)"Reset the board   ");
+    LCD_DisplayStringLine(LCD_LINE_8,(uint8_t*)"and try again     ");
+    while(1);
+  }
+
+
 }  
 
 /**
