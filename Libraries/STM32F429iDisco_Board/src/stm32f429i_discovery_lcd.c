@@ -762,6 +762,12 @@ void LCD_DrawLine(uint16_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Directi
   uint32_t  Xaddress = 0;
   uint16_t Red_Value = 0, Green_Value = 0, Blue_Value = 0;
   
+	if (Xpos > LCD_PIXEL_WIDTH || Ypos > LCD_PIXEL_HEIGHT || Length == 0 ||
+		(Xpos + Length > LCD_PIXEL_WIDTH && Direction == LCD_DIR_HORIZONTAL) ||
+		(Ypos + Length > LCD_PIXEL_HEIGHT && Direction == LCD_DIR_VERTICAL)) {
+			return;
+	}
+
   Xaddress = CurrentFrameBuffer + 2*(LCD_PIXEL_WIDTH*Ypos + Xpos);
  
   Red_Value = (0xF800 & CurrentTextColor) >> 11;
@@ -830,6 +836,13 @@ void LCD_DrawRect(uint16_t Xpos, uint16_t Ypos, uint16_t Height, uint16_t Width)
 void LCD_DrawCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
 {
     int x = -Radius, y = 0, err = 2-2*Radius, e2;
+
+	if (Xpos + Radius > LCD_PIXEL_WIDTH || Xpos - Radius < 0 ||
+		Ypos + Radius > LCD_PIXEL_HEIGHT || Ypos - Radius < 0 ||
+	  Radius == 0) {
+			return;
+	}
+
     do {
         *(__IO uint16_t*) (CurrentFrameBuffer + (2*((Xpos-x) + LCD_PIXEL_WIDTH*(Ypos+y)))) = CurrentTextColor; 
         *(__IO uint16_t*) (CurrentFrameBuffer + (2*((Xpos+x) + LCD_PIXEL_WIDTH*(Ypos+y)))) = CurrentTextColor;
@@ -916,6 +929,12 @@ void LCD_DrawEllipse(int Xpos, int Ypos, int Radius, int Radius2)
   int x = -Radius, y = 0, err = 2-2*Radius, e2;
   float K = 0, rad1 = 0, rad2 = 0;
    
+	if (Xpos + Radius > LCD_PIXEL_WIDTH || Xpos - Radius < 0 ||
+		Ypos + Radius2 > LCD_PIXEL_HEIGHT || Ypos - Radius2 < 0 ||
+	  Radius == 0 || Radius2 ==0) {
+			return;
+	}
+
   rad1 = Radius;
   rad2 = Radius2;
   
@@ -1109,6 +1128,12 @@ void LCD_DrawFullRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Hei
   uint32_t  Xaddress = 0; 
   uint16_t Red_Value = 0, Green_Value = 0, Blue_Value = 0;
  
+	if (Xpos > LCD_PIXEL_WIDTH || Ypos > LCD_PIXEL_HEIGHT || Width == 0 || Height == 0 ||
+		Xpos + Width > LCD_PIXEL_WIDTH || Ypos + Height > LCD_PIXEL_HEIGHT) {
+			return;
+	}
+
+
   Red_Value = (0xF800 & CurrentTextColor) >> 11;
   Blue_Value = 0x001F & CurrentTextColor;
   Green_Value = (0x07E0 & CurrentTextColor) >> 5;
@@ -2052,7 +2077,6 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 	printf("Assert failed\n\nFile:\n%s\n\nLine:%4d",file,line);
 
-	
   /* Infinite loop */
   while (1)
   {
